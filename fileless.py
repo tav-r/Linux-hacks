@@ -1,3 +1,14 @@
+"""
+Pull a binary via HTTP and execute it in memory (does not touch disk). You can run it like this:
+
+python <(curl -s https://raw.githubusercontent.com/tav-r/Linux-hacks/main/fileless.py) binary -a -b -c
+
+TODO:
+    - Make it possible to change HTTP source
+    - HTTPS option
+    - Fake argv[0] for stealth
+"""
+
 from ctypes import CDLL
 from os import execv
 from socket import socket
