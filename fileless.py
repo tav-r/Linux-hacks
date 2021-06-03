@@ -11,8 +11,7 @@ s = socket()
 s.connect(PL_SRC)
 s.send(f"GET /{PL_PATH} HTTP/1.1\r\n\r\n".encode())
 
-RES = b""
-REC = s.recv(1024)
+RES = REC = s.recv(1024)
 while REC:
     REC = s.recv(1024)
     RES += REC
