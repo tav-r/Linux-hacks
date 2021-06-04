@@ -26,9 +26,10 @@ def fetch_and_execv(url: str, params: list[str]):
     protocol, uri = url.split("://", 1)
     host_port, location = uri.split("/", 1)
     host, port = host_port.split(":", 1) if ":" in host_port else\
-        host_port, 443 if protocol == "https" else 80
+        (host_port, 443 if protocol == "https" else 80)
 
     # connect and fetch executable
+    print(host, port)
     if protocol == "http":
         client = http_client.HTTPConnection(host, port)
     elif protocol == "https":
