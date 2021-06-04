@@ -47,7 +47,7 @@ def fetch_and_execv(url: str, params: list[str]):
     with open(path, "wb+") as memfile:
         memfile.write(res)
 
-    if fork() and environ.get("FORK"):
+    if environ.get("FORK") and fork():
         sys_exit()
 
     execv(path, [path] + params)
