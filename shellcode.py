@@ -4,7 +4,7 @@ Execute base64 encoded shellcode given as as a command line argument.
 
 from ctypes import (CDLL, CFUNCTYPE, c_char_p, c_void_p, cast, c_int, c_size_t,
                     c_char, get_errno, addressof, POINTER)
-from os import strerror
+from os import strerror, fork, environ
 from sys import argv, exit as sys_exit
 from typing import Optional
 
@@ -36,6 +36,10 @@ def call_shellcode(shellcode_str: Optional[bytes] = None):
 
     # 'cast' shellcode to a function and run it
     shellcode_function = CFUNCTYPE(None)(shellcode)
+
+    if environ.get("FORK") and fork():
+        sys_exit()
+
     shellcode_function()
 
 
