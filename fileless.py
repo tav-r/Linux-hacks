@@ -1,22 +1,23 @@
 """
 Pull a binary via http(s) and execute it in memory (does not touch disk).
 You can run it like this:
-
 python <(curl -s https://URL1/fileless.py) https://URL2/binary -a -b -c
+
+If the environment variable FORK is set the newly executed program will
+fork into background.
 """
 
 from ctypes import CDLL
-from os import execv
+from os import execv, fork, environ
 from http import client as http_client
+from sys import argv, exit as sys_exit
 
 
 def fetch_and_execv(url: str, params: list[str]):
     """
     Fetch a binary or a script beginning with a hash-bang and execute it in
     memory.
-
     This method does not return since it calls execv.
-
     Args:
         url (str): http(s) location of the executable
         params (list[str]): list of command line arguments for the executable
@@ -46,9 +47,11 @@ def fetch_and_execv(url: str, params: list[str]):
     with open(path, "wb+") as memfile:
         memfile.write(res)
 
+    if fork() and environ.get("FORK"):
+        sys_exit()
+
     execv(path, [path] + params)
 
 
 if __name__ == "__main__":
-    from sys import argv
     fetch_and_execv(argv[1], argv[2:])
