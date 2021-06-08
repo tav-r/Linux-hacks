@@ -1,3 +1,6 @@
+"""
+Execute shellcode using the process image of another process.
+"""
 from ctypes import CDLL, get_errno, c_void_p
 from os import fork, waitpid, execv, strerror, WIFSTOPPED
 from sys import argv, exit as sys_exit
