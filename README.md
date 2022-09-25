@@ -1,7 +1,7 @@
 # Linux hacks
 A collection of mostly security-related hacks for Linux operating systems. It is supposed to show that, while everyone is locking down their PowerShell and .NET in the Windows world, Linux is pretty much an attackers playground and is _not at all a more secure operating system_ (at least not by default).
 
-## Using python
+## (shell)code execution
 ### [fileless.py](fileless.py)
 Uses python to fetch a binary via http(s), write it to an in-memory file and execute it. For example to run the latest version of linpeas with all checks enabled you can just enter the following in any bash-compatible terminal:
 ```bash
